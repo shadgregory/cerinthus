@@ -3,7 +3,7 @@ Add java libraries to your kawa project simply and easily using Cerinthus
 
 ## Usage
 
-Add cerinthus.scm to the top directory of your kawa project. The following example code downloads the apache poi library and adds it to your runtime.
+Add cerinthus.scm to the root directory of your kawa project. The following example code downloads the apache poi library and adds it to your runtime.
 
 ```scm
 (require <cerinthus>)
