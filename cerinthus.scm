@@ -9,6 +9,19 @@
 (define-alias NodeList org.w3c.dom.NodeList)
 (define-alias Document org.w3c.dom.Document)
 
+(define displayln
+  (lambda (str)
+    (display str)
+    (newline)))
+
+(define copy-url-to-file
+  (lambda (url file)
+    (try-catch
+     (set! &<{&[file]} &<{&[url]})
+     (ex java.io.FileNotFoundException
+	 (displayln (string-append "Error! Could not download " url))
+	 (exit)))))
+
 ;; string-append replacement macro
 (define-syntax str
   (syntax-rules ()
@@ -33,7 +46,7 @@
 ;; create directory if necessary
 (define check-directory
   (lambda (directory)
-    (let ((base-dir (str (java.lang.System:getProperty "user.home") "/.kawa-env"))
+    (let ((base-dir (str (java.lang.System:getProperty "user.home") "/.cerinthus"))
 	  (directories (regex-split "/" directory)))
       (if (not (file-exists? base-dir))
 	  (create-directory base-dir))
@@ -48,8 +61,7 @@
 
 (define set-jar!
   (lambda (filepath)
-    (display (str "Adding " filepath))
-    (newline)
+    (displayln (str "Adding " filepath))
     (let* ((file (File (filepath:toString)))
 	   (uri (invoke (as File file) 'toURI))
 	   (url (invoke (as URI uri) 'toURL))
@@ -63,8 +75,7 @@
 ;; create org.w3c.dom.Document object from file path string
 (define create-doc
   (lambda (file-string)
-    (let* (
-	   (file (File (file-string:toString)))
+    (let* ((file (File (file-string:toString)))
 	   (db-factory (javax.xml.parsers.DocumentBuilderFactory:newInstance))
 	   (db-builder (invoke (as javax.xml.parsers.DocumentBuilderFactory db-factory) 'newDocumentBuilder))
 	   (doc (invoke (as javax.xml.parsers.DocumentBuilder db-builder) 'parse (as File file)))
@@ -112,7 +123,8 @@
 			       (let ((node (str-list:item cnt)))
 				 (cond
 				  ((= cnt (- (str-list:getLength) 1)) "")
-				  ((string=? "latestVersion" ((as org.w3c.dom.Element node):getAttribute "name")) (node:getTextContent))
+				  ((string=? "latestVersion" ((as Element node):getAttribute "name"))
+				   (node:getTextContent))
 				  (else
 				   (find-ver (+ cnt 1))))))))
 	    (find-ver 0)))))))
@@ -140,12 +152,12 @@
 				       "/" version "/"
 				       artifact-id "-" version ".pom"))
 	     (local-jar-file (string-append (java.lang.System:getProperty "user.home")
-					"/.kawa-env/"
+					"/.cerinthus/"
 					(regex-replace* "\\." group-id "/") "/"
 					artifact-id "-"
 					version ".jar"))
 	     (local-pom-file (string-append (java.lang.System:getProperty "user.home")
-					"/.kawa-env/"
+					"/.cerinthus/"
 					(regex-replace* "\\." group-id "/") "/"
 					artifact-id "-"
 					version ".pom")))
@@ -155,14 +167,12 @@
 	      (and (not (file-exists? local-pom-file))(not no-pom?)))
 	  (begin
 	    (check-directory (string-append (regex-replace* "\\." group-id "/") "/"))
-	    (display (str "Downloading : " maven-jar-url))
-	    (newline)
-	    (set! &<{&[local-jar-file]} &<{&[maven-jar-url]})
+	    (displayln (str "Downloading : " maven-jar-url))
+	    (copy-url-to-file maven-jar-url local-jar-file)
 	    (if (eq? no-pom? #f)
 		(begin
-		  (display (str "Downloading : " maven-pom-url))
-		  (newline)
-		  (set! &<{&[local-pom-file]} &<{&[maven-pom-url]})
+		  (displayln (str "Downloading : " maven-pom-url))
+		  (copy-url-to-file maven-pom-url local-pom-file)
 		  (get-dependencies local-pom-file)))
 	      (set-jar! local-jar-file)
 	      (set-env! (cdr dependencies))))
