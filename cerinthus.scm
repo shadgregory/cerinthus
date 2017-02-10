@@ -14,34 +14,27 @@
     (display str)
     (newline)))
 
+;; string-append replacement
+(define str
+  (lambda (#!rest rest-args)
+    (letrec ((create (lambda (args cat-str)
+		       (cond
+			((null? args) cat-str)
+			((symbol? (car args))
+			 (create (cdr args) (string-append cat-str (symbol->string (car args)))))
+			((number? (car args))
+			 (create (cdr args) (string-append cat-str (number->string (car args)))))
+			(else
+			 (create (cdr args) (string-append cat-str (car args))))))))
+      (create rest-args ""))))
+
 (define copy-url-to-file
   (lambda (url file)
     (try-catch
      (set! &<{&[file]} &<{&[url]})
      (ex java.io.FileNotFoundException
-	 (displayln (string-append "Error! Could not download " url))
+	 (displayln (str "Error! Could not download " url))
 	 (exit)))))
-
-;; string-append replacement macro
-(define-syntax str
-  (syntax-rules ()
-    ((_) "")
-    ((_ string1 . rest)
-     (cond
-      ((null? string1)
-       (string-append "" (str . rest)))
-      ((boolean? string1)
-       (cond
-	((not string1)
-	 (string-append "FALSE" (str . rest)))
-	(else
-	 (string-append "TRUE" (str . rest)))))
-      ((symbol? string1)
-       (string-append (symbol->string string1) (str . rest)))
-      ((number? string1)
-       (string-append (number->string string1) (str  . rest)))
-      (else
-       (string-append string1 (str . rest)))))))
 
 ;; create directory if necessary
 (define check-directory
@@ -109,12 +102,12 @@
 
 (define get-latest-version
   (lambda (group-id artifact-id)
-    (let ((maven-search-url (string-append "https://search.maven.org/solrsearch/select?q=g:%22"
+    (let ((maven-search-url (str "https://search.maven.org/solrsearch/select?q=g:%22"
 					   group-id
 					   "%22+AND+a:%22"
 					   artifact-id
 					   "\"&wt=xml"))
-	  (local-xml-file (string-append
+	  (local-xml-file (str
 			   (java.lang.System:getProperty "java.io.tmpdir")
 			   (java.lang.System:getProperty "file.separator")
 			   artifact-id ".xml")))
@@ -144,22 +137,22 @@
 	      (if (null? (cdr (cdr (car dependencies))))
 		  (get-latest-version group-id artifact-id)
 		  (str (car (cdr (cdr (car dependencies)))))))
-	     (maven-jar-url (string-append "https://repo1.maven.org/maven2/"
+	     (maven-jar-url (str "https://repo1.maven.org/maven2/"
 				       (regex-replace* "\\." group-id "/")
 				       "/" artifact-id
 				       "/" version "/"
 				       artifact-id "-" version ".jar"))
-	     (maven-pom-url (string-append "https://repo1.maven.org/maven2/"
+	     (maven-pom-url (str "https://repo1.maven.org/maven2/"
 				       (regex-replace* "\\." group-id "/")
 				       "/" artifact-id
 				       "/" version "/"
 				       artifact-id "-" version ".pom"))
-	     (local-jar-file (string-append (java.lang.System:getProperty "user.home")
+	     (local-jar-file (str (java.lang.System:getProperty "user.home")
 					"/.cerinthus/"
 					(regex-replace* "\\." group-id "/") "/"
 					artifact-id "-"
 					version ".jar"))
-	     (local-pom-file (string-append (java.lang.System:getProperty "user.home")
+	     (local-pom-file (str (java.lang.System:getProperty "user.home")
 					"/.cerinthus/"
 					(regex-replace* "\\." group-id "/") "/"
 					artifact-id "-"
@@ -169,7 +162,7 @@
 	 ((or (not (file-exists? local-jar-file))
 	      (and (not (file-exists? local-pom-file))(not no-pom?)))
 	  (begin
-	    (check-directory (string-append (regex-replace* "\\." group-id "/") "/"))
+	    (check-directory (str (regex-replace* "\\." group-id "/") "/"))
 	    (displayln (str "Downloading : " maven-jar-url))
 	    (copy-url-to-file maven-jar-url local-jar-file)
 	    (if (eq? no-pom? #f)
