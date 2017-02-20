@@ -9,6 +9,7 @@
 (define-alias NodeList org.w3c.dom.NodeList)
 (define-alias Document org.w3c.dom.Document)
 
+;;;; utils ;;;;
 (define displayln
   (lambda (str)
     (display str)
@@ -35,6 +36,7 @@
      (ex java.io.FileNotFoundException
 	 (displayln (str "Error! Could not download " url))
 	 (exit)))))
+;;;;end utils;;;;;
 
 ;; create directory if necessary
 (define check-directory
@@ -80,25 +82,26 @@
   (lambda (pom-file)
     (let ((doc (create-doc pom-file)))
       (let ((depList (doc:getElementsByTagName "dependency")))
-		  (letrec ((download
-		    (lambda (i)
-		      (let* ((node (depList:item i))
-			     (version-list (invoke (as Element node) 'getElementsByTagName "version"))
-			     (version-item (invoke (as NodeList version-list) 'item 0))
-			     (groupid-list (invoke (as Element node) 'getElementsByTagName "groupId"))
-			     (groupid-item (invoke (as NodeList groupid-list) 'item 0))
-			     (artifactid-list (invoke (as Element node) 'getElementsByTagName "artifactId"))
-			     (artifactid-item (invoke (as NodeList artifactid-list) 'item 0)))
-			(if (not (eq? #!null version-item))
-			    (let ((version (version-item:getTextContent))
-				  (artifactid (artifactid-item:getTextContent))
-				  (groupid (groupid-item:getTextContent)))
-			      (if (regex-match #/^[0-9.]/ version)
-				  (begin
-				    (set-env! `((,groupid ,artifactid ,version)) #t)
-				    (if (not (= i 0))
-					(download (- i 1)))))))))))
-		    (download (- (invoke (as NodeList depList) 'getLength) 1)))))))
+	(if (> (depList:getLength) 0)
+	    (letrec ((download
+		      (lambda (i)
+			(let* ((node (depList:item i))
+			       (version-list (invoke (as Element node) 'getElementsByTagName "version"))
+			       (version-item (invoke (as NodeList version-list) 'item 0))
+			       (groupid-list (invoke (as Element node) 'getElementsByTagName "groupId"))
+			       (groupid-item (invoke (as NodeList groupid-list) 'item 0))
+			       (artifactid-list (invoke (as Element node) 'getElementsByTagName "artifactId"))
+			       (artifactid-item (invoke (as NodeList artifactid-list) 'item 0)))
+			  (if (not (eq? #!null version-item))
+			      (let ((version (version-item:getTextContent))
+				    (artifactid (artifactid-item:getTextContent))
+				    (groupid (groupid-item:getTextContent)))
+				(if (regex-match #/^[0-9.]/ version)
+				    (begin
+				      (set-env! `((,groupid ,artifactid ,version)) #t)
+				      (if (not (= i 0))
+					  (download (- i 1)))))))))))
+	      (download (- (invoke (as NodeList depList) 'getLength) 1))))))))
 
 (define get-latest-version
   (lambda (group-id artifact-id)
