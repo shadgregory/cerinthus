@@ -1,13 +1,10 @@
 (module-name cerinthus)
-(module-export set-env!)
+(module-export set-env! displayln str)
 (import (kawa regex))
-(define-alias File java.io.File)
-(define-alias URI java.net.URI)
-(define-alias URL java.net.URL)
-(define-alias URLClassLoader java.net.URLClassLoader)
-(define-alias Element org.w3c.dom.Element)
-(define-alias NodeList org.w3c.dom.NodeList)
-(define-alias Document org.w3c.dom.Document)
+(import
+ (class java.io File)
+ (class java.net URI URL URLClassLoader)
+ (class org.w3c.dom Element NodeList Document))
 
 ;;;; utils ;;;;
 (define displayln
