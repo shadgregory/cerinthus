@@ -7,8 +7,8 @@ Add cerinthus.scm to the root directory of your kawa project. The following exam
 
 ```scm
 (require <cerinthus>)
-(set-env! '((org.apache.poi poi 3.15)
-	    (org.apache.poi poi-ooxml 3.15)
+(set-env! '((org.apache.poi poi 3.17)
+	    (org.apache.poi poi-ooxml 3.17)
 	    (org.apache.xmlbeans xmlbeans 2.6.0)))
 ```
 
@@ -28,7 +28,7 @@ Kawa conveniently supports the unix-style she-bang for scripting. Cerinthus make
 
 ;;example kawa script that also helps us learn more about Cerinthus
 (require <cerinthus>)
-(set-env! '((commons-io commons-io 2.4)))
+(set-env! '((commons-io commons-io 2.6)))
 (define-alias FileUtils org.apache.commons.io.FileUtils)
 (define-alias URL java.net.URL)
 (define-alias File java.io.File)

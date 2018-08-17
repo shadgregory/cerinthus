@@ -1,7 +1,7 @@
 ;; Cerinthus example using Apache POI
 (require <cerinthus>)
-(set-env! '((org.apache.poi poi 3.15)
-	    (org.apache.poi poi-ooxml 3.15)
+(set-env! '((org.apache.poi poi 3.17)
+	    (org.apache.poi poi-ooxml 3.17)
 	    (org.apache.xmlbeans xmlbeans 2.6.0)))
 
 (define doc (org.apache.poi.xwpf.usermodel.XWPFDocument))
