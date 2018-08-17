@@ -36,3 +36,4 @@ Kawa conveniently supports the unix-style she-bang for scripting. Cerinthus make
 (define url (URL "http://www.earlychristianwritings.com/text/irenaeus-book1.html"))
 (FileUtils:copyURLToFile url (File "./irenaeus-book1.html"))
 ```
+Cerinthus is compatible with Kawa 2.4.
